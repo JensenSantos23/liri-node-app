@@ -1,114 +1,144 @@
+//code to read and set any environment variables with the dotenv package
 require("dotenv").config();
-var keys = require('./javascript/keys');
-var Spotify = require('node-spotify-api');
-//added to format table 
-var cTable = require('console.table');
-var request = require('request');
-var moment = require('moment');
 
+// imports the keys.js file
+var keys = require("./keys.js");
+var Spotify = require("node-spotify-api");
+var fs = require("fs");
+var request = require("request");
+var moment = require("moment");
+var spotify = new Spotify(keys.spotify);
 
+var input = process.argv;
+var command = input[2];
 
-var spotify = new Spotify({
-    id: keys.spotify.id,
-    secret: keys.spotify.secret
+//variable for holding the name of the movie, artist , or song
+var name = "";
+
+for (var i = 3; i < input.length; i++) {
+  if (i > 3 && i < input.length) {
+    name = name + "+" + input[i];
+  } else {
+    name += input[i];
+  }
+}
+
+decisionSwitch();
+// Make it so liri.js can take in one of the following commands:
+function decisionSwitch() {
+  switch (command) {
+    case "concert-this":
+      callBit(name);
+      break;
+
+    case "spotify-this-song":
+      callSpotify(name);
+      break;
+
+    case "movie-this":
+      callOmdb(name);
+      break;
+
+    case "do-what-it-says":
+      doWhatItSays();
+      break;
+
+    default:
+      console.log("Invalid input, try again.");
+  }
+}
+
+function callBit() {
+  var queryUrl =
+    "https://rest.bandsintown.com/artists/" +
+    name +
+    "/events?app_id=codingbootcamp";
+  console.log(queryUrl);
+  request(queryUrl, function(error, response, body) {
+    // If the request is successful
+    var pbody = JSON.parse(body);
+    if (!error && response.statusCode === 200) {
+      pbody.forEach(function(element) {
+        console.log("Venue name - " + element.venue.name);
+        console.log(
+          "Venue Location - " +
+            element.venue.city +
+            " , " +
+            element.venue.region +
+            "  - " +
+            element.venue.country
+        );
+        console.log("Date - " + moment(element.datetime).format("MM/DD/YYYY"));
+      });
+    }
+  });
+}
+
+function callSpotify() {
+  if (name === "") {
+    name = "The Sign Ace of Base";
+  }
+
+  spotify.search({ type: "track", query: name, limit: "10" }, function(
+    error,
+    data
+  ) {
+    if (error) {
+      return console.log("Error occurred: " + error);
+    }
+
+    var song = data.tracks.items[0];
+    console.log("Artist(s) - " + song.artists[0].name);
+    console.log("Name of song - " + song.name);
+    console.log("Preview link on spotify - " + song.preview_url);
+    console.log("Album - " + song.album.name);
   });
 
+  //Artist(s)
+  // The song's name
+  // A preview link of the song from Spotify
+  // The album that the song is from
 
-
-
-if (process.argv[2] == 'concert-this' ) {
-   
-    var artist = process.argv.slice(3).join(" ")
-    console.log(artist);
-   
-    var queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
-
-    request(queryURL, function (error, response, body) {
-        if (error) console.log(error);
-        var result  =  JSON.parse(body)[0];
-        console.log("Venue name " + result.venue.name);
-        console.log("Venue location " + result.venue.city);
-        console.log("Date of Event " +  moment(result.datetime).format("MM/DD/YYYY"));
-       
-
-
-    });
-
-
-    // Name of the venue
-    // Venue location
-    // Date of the Event (use moment to format this as "MM/DD/YYYY")   
-} else if ( process.argv[2] == 'spotify-this-song') {
-
-    var songName = process.argv.slice(3).join(" ");
-
-    if (songName == undefined) {
-        songName = "The sign by Ace of Base";
-    } 
-   
-
-     spotify.search({ type: 'track', query: songName, limit: 10  }, function(err, data) {
-            if (err) {
-            return console.log('Error occurred: ' + err);
-            }
-
-            var tableArray = [];
-
-            for (var i = 0; i < data.tracks.items.length; i++ ) {
-                var result = {
-                    artist : data.tracks.items[i].album.artists[0].name,
-                    album_name : data.tracks.items[i].album.name,
-                    song_name : data.tracks.items[i].name,
-                    preview_url : data.tracks.items[i].preview_url 
-                }
-                tableArray.push(result);
-            }
-      
-            
-            var table = cTable.getTable(tableArray);
-    
-            console.log(table);
-
-       
-    });
-
-
-
-
-
-
-
-
-// If no song is provided then your program will default to "The Sign" by Ace of Base.
-} else if ( process.argv[2] == 'movie-this') {
-    var movieName = process.argv.slice(3).join(" ");
-
-    if (movieName == undefined) {
-        movieName = "Mr. Nobody";
-    } 
-
-    request('http://www.omdbapi.com/?i=tt3896198&apikey=55e8eecb&t=' + process.argv[3], function (error, response, body) {
-        
-        var result  =  JSON.parse(body);
-        console.log("Title :" + result.Title);
-        console.log("Year :" + result.Released);
-        console.log("IMDB Rating :" + result.imdbRating );
-        console.log("Rotten Tomatoes :" + result.Ratings[1].Value);
-        console.log("Country :" +  result.Country);
-        console.log("Language :" + result.Language);
-        console.log("Movie Plot :" + result.Plot);
-        console.log("Actors :" +  result.Actors);
-
-    });
-
-} else if ( process.argv[2] == 'do-what-it-says') {
-    console.log('do what it says')
+  // If no song is provided then your program will default to "The Sign" by Ace of Base.
 }
-   
-//  spotify.search({ type: 'track', query: 'All the Small Things' }, function(err, data) {
-//     if (err) {
-//       return console.log('Error occurred: ' + err);
-//     }
-   
-//   console.log(data); 
-//   });
+
+function callOmdb() {
+  // This line is just to help us debug against the actual URL.
+  if (name === "") {
+    name = "Mr. Nobody";
+  }
+
+  var queryUrl =
+    "http://www.omdbapi.com/?t=" +
+    name +
+    "&y=&plot=short&tomatoes=true&apikey=trilogy";
+
+  request(queryUrl, function(error, response, body) {
+    // If the request is successful
+    if (!error && response.statusCode === 200) {
+      // Parse the body of the site and recover just the imdbRating
+      var pbody = JSON.parse(body);
+      console.log("Title - " + pbody.Title);
+      console.log("Release Year: - " + pbody.Year);
+      console.log("IMDB Rating - " + pbody.imdbRating);
+      console.log("Rotten Tomatoes Rating - " + pbody.tomatoRating);
+      console.log("Country where the movie was produced - " + pbody.Country);
+      console.log("Language - " + pbody.Language);
+      console.log("Plot - " + pbody.Plot);
+      console.log("Actors - " + pbody.Actors);
+    }
+  });
+}
+
+function doWhatItSays() {
+  fs.readFile("./random.txt", "utf8", function(error, fileText) {
+    if (error) throw error;
+
+    fileText = fileText.split(",");
+    command = fileText[0];
+    console.log(command);
+    name = fileText[1];
+    console.log(name);
+    decisionSwitch();
+  });
+}
