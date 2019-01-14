@@ -16,14 +16,3 @@ node liri.js movie-this '' - This will return information about movies from OMDB
 
 node liri.js do-what-it-says - This will run a special command that is stored in a text file.
 
-Working Example:
-
-C:\Users\jensen\Desktop\liri-node-app\images\node liri.js concert-this foo fighters.PNG
-
-C:\Users\jensen\Desktop\liri-node-app\images\node liri.js do-what-it-says.PNG
-
-C:\Users\jensen\Desktop\liri-node-app\images\node liri.js movie-this.PNG
-
-C:\Users\jensen\Desktop\liri-node-app\images\node liri.js spotify-this-song just the you are.PNG
-
-C:\Users\jensen\Desktop\liri-node-app\images\node liri.js spotify-this-song.PNG
