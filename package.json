@@ -4,6 +4,8 @@
   "description": "",
   "main": "key.js",
   "dependencies": {
+    "dotenv": "^6.2.0",
+    "node": "^11.6.0",
     "require": "^2.4.20"
   },
   "devDependencies": {},
