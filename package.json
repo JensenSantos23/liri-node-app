@@ -1,10 +1,11 @@
 {
   "name": "liri-node-app",
   "version": "1.0.0",
-  "description": "",
-  "main": "key.js",
+  "description": "This application will search Spoify for songs, Bands in Town for concerts and OMDB for movies.",
+  "main": "keys.js",
   "dependencies": {
     "dotenv": "^6.2.0",
+    "moment": "^2.23.0",
     "node": "^11.6.0",
     "node-spotify-api": "^1.0.7",
     "require": "^2.4.20"
